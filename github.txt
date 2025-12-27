@@ -1,0 +1,74 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📦 Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: 🔧 Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          git \
+          build-essential \
+          libffi-dev \
+          libssl-dev \
+          python3-pip \
+          autoconf \
+          automake \
+          libtool \
+          pkg-config \
+          cmake \
+          zip \
+          unzip
+          
+    - name: 📦 Install Buildozer and requirements
+      run: |
+        pip install --upgrade pip
+        pip install buildozer==1.2.0 cython==0.29.28
+        
+    - name: 🔐 Accept Android licenses
+      run: |
+        mkdir -p ~/.android
+        touch ~/.android/repositories.cfg
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        
+    - name: 🛠️ Build Android APK
+      timeout-minutes: 30
+      run: |
+        echo "Starting Buildozer build..."
+        buildozer -v android debug
+        
+    - name: 📱 Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Network-Scanner-APK
+        path: bin/*.apk
+        retention-days: 7
+        
+    - name: 🔔 Send Telegram notification (optional)
+      if: success()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          ✅ Build Successful!
+          📱 APK: Network Scanner
+          ⏰ Time: ${{ job.status }}
+          🔗 Download: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
