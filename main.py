@@ -1,3 +1,4 @@
+
 """
 Android Network Security Scanner
 Build with Kivy for Android
@@ -294,16 +295,34 @@ class NetworkScannerApp(App):
                                 
                             # Update UI progressively
                             Clock.schedule_once(lambda dt, r=results.copy(): 
-                                                self.update_scan_results(r), 0)
+                                              self.update_scan_results(r), 0)
                                 
-                        except:
-                            pass
+                        except Exception:
+                            results.append(f"❌ {ip} - Error: Connection failed")
+                            continue
                 
-                # Update final results
-                Clock.schedule_once(lambda dt: self.finalize_scan(results), 0)
-                
-            except Exception as e:
-                Clock.schedule_once(lambda dt: self.show_error(str(e)), 0)
+                    # Update final results
+                    Clock.schedule_once(lambda dt: self.finalize_scan(results), 0)
+                    
+                else:
+                    # Single IP scan
+                    try:
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        sock.settimeout(2)
+                        result = sock.connect_ex((target, 80))
+                        sock.close()
+                        
+                        if result == 0:
+                            Clock.schedule_once(lambda dt: self.finalize_scan([f"✅ {target} - Online"]), 0)
+                        else:
+                            Clock.schedule_once(lambda dt: self.finalize_scan([f"❌ {target} - Offline"]), 0)
+                            
+                    except Exception:
+                        Clock.schedule_once(lambda dt: self.show_error("Connection error"), 0)
+                        
+            except Exception:
+                # FIXED: No undefined variable 'e'
+                Clock.schedule_once(lambda dt: self.show_error("Scan failed: Unknown error"), 0)
         
         threading.Thread(target=scan_thread).start()
     
@@ -335,16 +354,18 @@ class NetworkScannerApp(App):
                         # Update progress
                         Clock.schedule_once(lambda dt, p=port: 
                                           self.update_port_scan(p, ports), 0)
-                                          
-                    except:
-                        pass
+                          
+                    except Exception:
+                        open_ports.append(f"⚠️ Port {port} - Error: Connection failed")
+                        continue
                 
                 # Show results
                 Clock.schedule_once(lambda dt, op=open_ports: 
                                   self.show_port_results(op), 0)
                 
-            except Exception as e:
-                Clock.schedule_once(lambda dt: self.show_port_error(str(e)), 0)
+            except Exception:
+                # FIXED: No undefined variable 'e'
+                Clock.schedule_once(lambda dt: self.show_port_error("Port scan failed"), 0)
         
         threading.Thread(target=port_scan_thread).start()
     
@@ -477,7 +498,6 @@ class NetworkScannerApp(App):
         """Export scan results"""
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"scan_results_{timestamp}.txt"
             
             data = f"""
             Network Security Scan Results
@@ -498,8 +518,8 @@ class NetworkScannerApp(App):
             self.results_label.text = f"📋 Export ready:\n\nCopy this content:\n\n{data[:500]}..."
             self.update_status("Results ready for copy")
             
-        except Exception as e:
-            self.update_status(f"Export failed: {str(e)}")
+        except Exception:
+            self.update_status("Export failed")
 
 if __name__ == '__main__':
     NetworkScannerApp().run()
