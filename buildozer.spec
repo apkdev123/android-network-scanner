@@ -1,45 +1,82 @@
+
+########################################
+# Buildozer configuration
+########################################
+
+[buildozer]
+log_level = 2
+warn_on_root = 1
+
+
+########################################
+# Application configuration
+########################################
+
 [app]
+# App title (shown on phone)
+title = Android Network Scanner
 
-# App title and package
-title = Network Security Scanner
+# Package name (NO spaces, lowercase only)
 package.name = networkscanner
-package.domain = org.network.scanner
 
-# Source code
+# Package domain (reverse domain)
+package.domain = org.example
+
+# Source code directory
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,ttf
-source.exclude_exts = spec,pyc,pyo
-source.exclude_dirs = tests, bin, .buildozer
 
-# Version
-version = 1.0
+# File types to include
+source.include_exts = py,png,jpg,jpeg,kv,atlas,json
 
-# Requirements
-requirements = python3,kivy==2.1.0,psutil,requests
+# App version
+version = 0.1
 
-# Android specific
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE
-android.api = 30
-android.minapi = 21
-android.sdk = 30
-android.ndk = 23b
-android.ndk_api = 21
+# Python & libraries (KEEP SIMPLE FIRST)
+requirements = python3,kivy
 
-# Build settings
-android.arch = arm64-v8a,armeabi-v7a
-p4a.branch = master
-android.accept_sdk_license = True
-
-# Orientation
+# App orientation
 orientation = portrait
+
+# Fullscreen mode
 fullscreen = 0
 
-# Log level
-log_level = 2
+# App icon (optional)
+# icon.filename = icon.png
 
-# Presplash
-presplash.filename = %(source.dir)s/presplash.png
-icon.filename = %(source.dir)s/icon.png
 
-# Window size
-window.size = 400, 700
+########################################
+# Android-specific configuration
+########################################
+
+# Target architectures (UPDATED – no deprecated token)
+android.archs = arm64-v8a,armeabi-v7a
+
+# Android API levels
+android.api = 33
+android.minapi = 21
+
+# Android NDK version (STABLE)
+android.ndk = 25b
+
+# Enable AndroidX
+android.enable_androidx = True
+
+# Permissions (add only what you need)
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE
+
+# Optional: Keep logs visible for debugging
+android.logcat_filters = *:S python:D
+
+# Optional: Prevent stripping (helps debugging crashes)
+android.debuggable = True
+
+
+########################################
+# Build options (safe defaults)
+########################################
+
+# Use Gradle (default)
+android.gradle_dependencies = com.android.tools.build:gradle:8.1.1
+
+# Do not clean automatically
+android.skip_update = False
